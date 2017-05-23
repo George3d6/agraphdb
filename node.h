@@ -3,29 +3,20 @@
 #include <list>
 #include <memory>
 #include <atomic>
+#include <climits>
+#include <experimental/type_traits>
+#include <type_traits>
 #include <boost/algorithm/string/join.hpp>
-
-class NodeSerializationMetadata {
-
-};
-
-template<class InternalDataType>
-class Node;
-
-template<class InternalDataType>
-class EntryNode;
-
+#include <iostream>
 
 template<class InternalDataType>
 class Node {
 public:
-    friend class Node<InternalDataType>;
-    friend class EntryNode<InternalDataType>;
     using TypedNode = Node<InternalDataType>;
     using ExternalNodePointer = std::shared_ptr<TypedNode>;
     static std::string serialization_separator() { return "#|#"; }
     static std::string serialization_link_list_separator() { return ","; }
-    
+
     std::weak_ptr<TypedNode> self;
     std::atomic<std::list<ExternalNodePointer>*> links;
     std::atomic<InternalDataType*> internal_data;
@@ -47,6 +38,20 @@ public:
         ExternalNodePointer temp_sp = self.lock();
         temp_sp->links.exchange(new_links);
     }
+
+    std::string serialize_node_metadata() {
+        ExternalNodePointer temp_sp = self.lock();
+        std::list<std::string> links_id{};
+        for(auto& link : *temp_sp->links) {
+            links_id.push_back(std::to_string(link->id));
+        }
+        std::string internal_data_size = std::to_string((*temp_sp->internal_data).size()*CHAR_BIT);
+        return  std::string{std::to_string(temp_sp->id) + TypedNode::serialization_separator()
+                + boost::algorithm::join(links_id, TypedNode::serialization_link_list_separator())
+                + TypedNode::serialization_separator() + internal_data_size};
+
+    }
+
     
     // @TODO find the safest reasonably fast way to free up all used ressource here
     ~Node() {
@@ -61,16 +66,3 @@ private:
     }
     static uint64_t uniq_id(bool increment = true) { static uint64_t _uniq_id = 0; if (increment){ ++_uniq_id; } return _uniq_id; }
 };
-
-template<typename InternalDataType>
-inline std::ostream& operator<<(std::ostream& os, const Node<InternalDataType>& this_node) {
-    std::shared_ptr<Node<InternalDataType>> temp_sp = this_node.self.lock();
-    std::list<std::string> links_id{};
-    for(auto& link : *temp_sp->links) {
-        links_id.push_back(std::to_string(link->id));
-    }
-    os << *(temp_sp->internal_data.load()) << Node<InternalDataType>::serialization_separator()
-       << boost::algorithm::join(links_id, Node<InternalDataType>::serialization_link_list_separator());
-    return os;
-}
-

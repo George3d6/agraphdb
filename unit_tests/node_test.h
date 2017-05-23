@@ -45,8 +45,8 @@ void node_link_test() {
 }
 
 void node_serialization_test() {
-    auto new_node = Node<std::string>::create(new std::string{"value"});
-    std::cout << (*new_node);
+    auto new_node = Node<std::string>::create(new std::string{"4325235"});
+    std::cout << new_node->serialize_node_metadata();
 }
 
 void run_node_unit_tests_suite() {
