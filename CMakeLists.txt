@@ -17,6 +17,8 @@ include_directories("${PROJECT_SOURCE_DIR}")
 file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/*.h
     ${PROJECT_SOURCE_DIR}/*cpp
+    ${PROJECT_SOURCE_DIR}/datatypes/*.h
+    ${PROJECT_SOURCE_DIR}/datatypes/*cpp
     ${PROJECT_SOURCE_DIR}/unit_tests/*.h
     ${PROJECT_SOURCE_DIR}/unit_tests/*cpp
     ${PROJECT_SOURCE_DIR}/functional_tests/*.h

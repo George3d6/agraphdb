@@ -3,29 +3,32 @@
 #include <string>
 #include <list>
 #include <iostream>
+#include <datatypes/float64.h>
+#include <datatypes/int64.h>
+#include <datatypes/utfstring.h>
 
 namespace unit_tests {
 
 void node_create_test() {
-    auto new_node = Node<std::string>::create(new std::string{"lalala"});
-    assert(*new_node->internal_data.load() == std::string{"lalala"});
+    auto new_node = Node<data::UTFString>::create(new data::UTFString{"lalala"});
+    assert(*new_node->internal_data.load() == data::UTFString{"lalala"});
 }
 
 void node_modify_test() {
-    auto new_node = Node<int>::create(new int{20});
+    auto new_node = Node<data::Int64>::create(new data::Int64{20});
     assert(*new_node->internal_data == 20);
-    new_node->modify_data(new int{50});
+    new_node->modify_data(new data::Int64{50});
     assert(*new_node->internal_data == 50);
 }
 
 void node_link_test() {
     //Create two nodes
-    auto new_node = Node<double>::create(new double{0.64});
-    auto related_node = Node<double>::create(new double{0.46});
-    auto related_node_two = Node<double>::create(new double{11.35});
+    auto new_node = Node<data::Float64>::create(new data::Float64{0.64});
+    auto related_node = Node<data::Float64>::create(new data::Float64{0.46});
+    auto related_node_two = Node<data::Float64>::create(new data::Float64{11.35});
     
     //link the second to the first
-    new_node->modify_links(new std::list<std::shared_ptr<Node<double>>>{related_node, related_node_two});
+    new_node->modify_links(new std::list<std::shared_ptr<Node<data::Float64>>>{related_node, related_node_two});
     
     //Make sure the second node has the right amount of members in its list of links
     assert(new_node->links.load()->size() == 2);
@@ -45,8 +48,8 @@ void node_link_test() {
 }
 
 void node_serialization_test() {
-    auto new_node = Node<std::string>::create(new std::string{"4325235"});
-    std::cout << new_node->serialize_node_metadata();
+    auto new_node = Node<data::UTFString>::create(new data::UTFString{"4325235"});
+    std::cout << new_node->serialize_node().first;
 }
 
 void run_node_unit_tests_suite() {
