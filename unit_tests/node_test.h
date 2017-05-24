@@ -28,9 +28,15 @@ void node_link_test() {
     auto related_node_two = Node<data::Float64>::create(new data::Float64{11.35});
     
     //link the second to the first
-    new_node->modify_links(new std::list<std::shared_ptr<Node<data::Float64>>>{related_node, related_node_two});
+    new_node->modify_links(new std::vector<std::shared_ptr<Node<data::Float64>>>{related_node, related_node_two});
     
-    //Make sure the second node has the right amount of members in its list of links
+    //Make sure the second node has the right amount of kids
+    assert(new_node->links.load()->size() == 1);
+
+    //add second to links
+    new_node->add_links(new std::vector<std::shared_ptr<Node<data::Float64>>>{related_node_two});
+
+    //Make sure the second node has the right amount of kids
     assert(new_node->links.load()->size() == 2);
     
     //Get a shared pointer from the first to the second

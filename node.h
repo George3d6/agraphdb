@@ -1,6 +1,6 @@
 #pragma once
 
-#include <list>
+#include <vector>
 #include <memory>
 #include <atomic>
 #include <climits>
@@ -18,7 +18,7 @@ public:
     static std::string serialization_link_list_separator() { static std::string _r{","}; return _r; }
 
     std::weak_ptr<TypedNode> self;
-    std::atomic<const std::list<ExternalNodePointer>*> links;
+    std::atomic<const std::vector<ExternalNodePointer>*> links;
     std::atomic<const InternalDataType*> internal_data;
     uint64_t id;
 
@@ -31,17 +31,27 @@ public:
     void modify_data(InternalDataType * new_internal_data) noexcept {
         //Use a temporary shared_ptr to itself instead of this since otherwise the destructor might be called whilst inside this method
         const ExternalNodePointer temp_sp = self.lock();
+        if(temp_sp == nullptr) { return; }
         temp_sp->internal_data.exchange(new_internal_data);
     }
 
-    void modify_links(std::list<ExternalNodePointer> * new_links) noexcept {
+    void modify_links(std::vector<ExternalNodePointer> * new_links) noexcept {
         const ExternalNodePointer temp_sp = self.lock();
+        if(temp_sp == nullptr) { return; }
+        temp_sp->links.exchange(new_links);
+    }
+
+    void add_links(std::vector<ExternalNodePointer> * new_links) noexcept {
+        const ExternalNodePointer temp_sp = self.lock();
+        if(temp_sp == nullptr) { return; }
+        new_links->insert(new_links->end(), temp_sp->links.load()->begin(), temp_sp->links.load()->end());
         temp_sp->links.exchange(new_links);
     }
 
     std::pair<std::string, std::string> serialize_node() const noexcept {
         const ExternalNodePointer temp_sp = self.lock();
-        std::list<std::string> links_id{};
+        if(temp_sp == nullptr) { return  std::make_pair("",""); }
+        std::vector<std::string> links_id{};
         for(auto& link : *temp_sp->links) {
             links_id.push_back(std::to_string(link->id));
         }
@@ -55,7 +65,7 @@ public:
     }
 
     
-    // @TODO find the safest reasonably fast way to free up all used ressource here
+    // Does stating this disable move operations for Node... tbs
     ~Node() noexcept {
         delete links;
         delete internal_data;
@@ -64,7 +74,7 @@ public:
 private:
     Node(InternalDataType * new_internal_data) noexcept {
         this->internal_data.store(new_internal_data);
-        this->links.store(new std::list<ExternalNodePointer>{});
+        this->links.store(new std::vector<ExternalNodePointer>{});
     }
     static uint64_t uniq_id(bool increment = true) { static uint64_t _uniq_id = 0; if (increment){ ++_uniq_id; } return _uniq_id; }
 };
