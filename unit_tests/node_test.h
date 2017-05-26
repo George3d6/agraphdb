@@ -11,14 +11,14 @@ namespace unit_tests {
 
 void node_create_test() {
     auto new_node = Node<data::UTFString>::create(new data::UTFString{"lalala"});
-    assert(*new_node->internal_data.load() == data::UTFString{"lalala"});
+    assert(new_node->internal_data.load()->content == data::UTFString{"lalala"}.content);
 }
 
 void node_modify_test() {
     auto new_node = Node<data::Int64>::create(new data::Int64{20});
-    assert(*new_node->internal_data == 20);
+    assert(new_node->internal_data.load()->content == 20);
     new_node->modify_data(new data::Int64{50});
-    assert(*new_node->internal_data == 50);
+    assert(new_node->internal_data.load()->content == 50);
 }
 
 void node_link_test() {
@@ -43,9 +43,9 @@ void node_link_test() {
     auto related_node_sp = new_node->links.load()->front();
     
     //Assert data is shared between the two, not copied
-    assert(related_node_sp->internal_data == related_node->internal_data);
+    assert(related_node_sp->internal_data.load()->content == related_node->internal_data.load()->content);
     //Assert data is the same
-    assert(*related_node_sp->internal_data == *related_node->internal_data);
+    assert(related_node_sp->internal_data.load()->content == related_node->internal_data.load()->content);
     //Assert reference count is correct
     assert(related_node.use_count() == related_node_sp.use_count());
     assert(related_node.use_count() == 3);
@@ -55,7 +55,7 @@ void node_link_test() {
 
 void node_serialization_test() {
     auto new_node = Node<data::UTFString>::create(new data::UTFString{"4325235"});
-    std::cout << new_node->serialize_node().first;
+    assert(new_node->serialize_node().first == "0||7");
 }
 
 void run_node_unit_tests_suite() {

@@ -13,43 +13,43 @@ template<class InternalDataType>
 class Node {
 public:
     using TypedNode = Node<InternalDataType>;
-    using ExternalNodePointer = std::shared_ptr<TypedNode>;
+    using NodeSP = std::shared_ptr<TypedNode>;
     static std::string serialization_separator() { static std::string _r{"|"}; return _r; }
     static std::string serialization_link_list_separator() { static std::string _r{","}; return _r; }
 
     std::weak_ptr<TypedNode> self;
-    std::atomic<const std::vector<ExternalNodePointer>*> links;
+    std::atomic<const std::vector<NodeSP>*> links;
     std::atomic<const InternalDataType*> internal_data;
     uint64_t id;
 
-    static ExternalNodePointer create(InternalDataType * new_internal_data) {
-        const ExternalNodePointer node_sp = ExternalNodePointer{new TypedNode{new_internal_data}};
+    static NodeSP create(InternalDataType * new_internal_data) {
+        const NodeSP node_sp = NodeSP{new TypedNode{new_internal_data}};
         node_sp->self = node_sp;
         return node_sp;
     }
 
     void modify_data(InternalDataType * new_internal_data) noexcept {
         //Use a temporary shared_ptr to itself instead of this since otherwise the destructor might be called whilst inside this method
-        const ExternalNodePointer temp_sp = self.lock();
+        const NodeSP temp_sp = self.lock();
         if(temp_sp == nullptr) { return; }
         temp_sp->internal_data.exchange(new_internal_data);
     }
 
-    void modify_links(std::vector<ExternalNodePointer> * new_links) noexcept {
-        const ExternalNodePointer temp_sp = self.lock();
+    void modify_links(std::vector<NodeSP> * new_links) noexcept {
+        const NodeSP temp_sp = self.lock();
         if(temp_sp == nullptr) { return; }
         temp_sp->links.exchange(new_links);
     }
 
-    void add_links(std::vector<ExternalNodePointer> * new_links) noexcept {
-        const ExternalNodePointer temp_sp = self.lock();
+    void add_links(std::vector<NodeSP> * new_links) noexcept {
+        const NodeSP temp_sp = self.lock();
         if(temp_sp == nullptr) { return; }
         new_links->insert(new_links->end(), temp_sp->links.load()->begin(), temp_sp->links.load()->end());
         temp_sp->links.exchange(new_links);
     }
 
     std::pair<std::string, std::string> serialize_node() const noexcept {
-        const ExternalNodePointer temp_sp = self.lock();
+        const NodeSP temp_sp = self.lock();
         if(temp_sp == nullptr) { return  std::make_pair("",""); }
         std::vector<std::string> links_id{};
         for(auto& link : *temp_sp->links) {
@@ -74,7 +74,7 @@ public:
 private:
     Node(InternalDataType * new_internal_data) noexcept {
         this->internal_data.store(new_internal_data);
-        this->links.store(new std::vector<ExternalNodePointer>{});
+        this->links.store(new std::vector<NodeSP>{});
     }
     static uint64_t uniq_id(bool increment = true) { static uint64_t _uniq_id = 0; if (increment){ ++_uniq_id; } return _uniq_id; }
 };
