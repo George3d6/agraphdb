@@ -68,5 +68,4 @@ void run_node_unit_tests_suite() {
     node_serialization_test();
     std::cout << "Node serialization unit tests suite passed\n";
 }
-
 }
