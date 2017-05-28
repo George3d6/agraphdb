@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.7)
 
 project(graphdb)
 
-SET(CMAKE_CXX_COMPILER, "clang")
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCMAKE_BUILD_TYPE=Debug")
 SET(CMAKE_CXX_FLAGS "--std=c++1z -lpthread")
 
