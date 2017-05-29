@@ -28,7 +28,7 @@ void node_link_test() {
     auto related_node_two = Node<data::Float64>::create(data::Float64{11.35});
 
     //link the second to the first
-    new_node->links = std::vector<std::shared_ptr<Node<data::Float64>>>{related_node, related_node_two};
+    new_node->links = std::vector<std::shared_ptr<const Node<data::Float64>>>{related_node, related_node_two};
 
     //Make sure the second node has the right amount of kids
     assert(new_node->links.size() == 2);
@@ -40,6 +40,7 @@ void node_link_test() {
     assert(new_node->links.size() == 3);
 
     //Get a shared pointer from the first to the second
+    related_node->internal_data = double{0.0011};
     auto related_node_sp = related_node;
 
     //Assert data is shared between the two, not copied
@@ -56,7 +57,8 @@ void node_link_test() {
 
 void node_serialization_test() {
     auto new_node = Node<data::UTFString>::create(data::UTFString{"4325235"});
-    assert(new_node->serialize_node().first == "0||7");
+    assert(new_node->serialize_node().first == "2||7");
+    assert(new_node->serialize_node().second == "4325235");
 }
 
 void run_node_unit_tests_suite() {

@@ -8,6 +8,15 @@
 #include <datatypes/utfstring.h>
 
 namespace unit_tests {
+
+static std::string match_against = "";
+auto functor = [](data::UTFString data) -> bool {
+    if(data.content.find(match_against)!= std::string::npos) {
+        return true;
+    }
+    return false;
+};
+
 Graph<data::UTFString> graph{};
 
 void test_graph_add() {
@@ -20,21 +29,13 @@ void test_graph_add() {
 }
 
 void test_graph_query() {
-    std::string match_against = "";
-    auto functor = [&match_against](data::UTFString data) -> bool {
-        if(data.content.find(match_against)!= std::string::npos) {
-            return true;
-        }
-        return false;
-    };
-
     match_against = "data";
-    auto node_sp = graph.get_first_where(functor);
-    assert(node_sp != nullptr);
+    auto node_up = graph.get_first_where(functor);
+    assert(node_up != nullptr);
 
     match_against= "brata";
-    node_sp = graph.get_first_where(functor);
-    assert(node_sp == nullptr);
+    node_up = graph.get_first_where(functor);
+    assert(node_up == nullptr);
 
     match_against = "data";
     auto node_container =graph.get_all_where<std::vector>(functor);
@@ -51,8 +52,20 @@ void test_graph_query() {
     std::cout << "Graph filter queries unit tests passed\n";
 }
 
+void test_add_child() {
+    match_against = "data";
+    auto node_up = graph.get_first_where(functor);
+    assert(node_up != nullptr);
+    graph.add_child_node(data::UTFString{"___&&___"}, node_up->id);
+    match_against = "___&&___";
+    node_up = graph.get_first_where(functor);
+    assert(node_up != nullptr);
+    std::cout << "Adding childrens to the graph works" << "\n";
+}
+
 void run_graph_unit_tests_suite() {
     test_graph_add();
     test_graph_query();
+    test_add_child();
 }
 }

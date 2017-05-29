@@ -18,11 +18,12 @@ class Node {
 public:
     using TypedNode = Node<InternalDataType>;
     using NodeSP = std::shared_ptr<TypedNode>;
+    using ConstNodeSP = std::shared_ptr<const TypedNode>;
     static std::string serialization_separator() { static std::string _r{"|"}; return _r; }
     static std::string serialization_link_list_separator() { static std::string _r{","}; return _r; }
 
     std::weak_ptr<TypedNode> self;
-    std::vector<NodeSP> links{};
+    std::vector<ConstNodeSP> links{};
     InternalDataType internal_data{};
     uint64_t id;
 
@@ -51,6 +52,32 @@ public:
     }
 
 private:
-    Node(InternalDataType new_internal_data): internal_data(new_internal_data) {}
+    Node(InternalDataType new_internal_data): internal_data(new_internal_data),id(uniq_id(true)) {}
     static uint64_t uniq_id(bool increment = true) { static uint64_t _uniq_id = 0; if (increment){ ++_uniq_id; } return _uniq_id; }
 };
+
+template<class InternalDataType>
+class NodeContent {
+public:
+    std::vector<uint64_t> link_ids;
+    InternalDataType internal_data;
+    uint64_t id;
+
+    NodeContent(const Node<InternalDataType> * const node): internal_data(node->internal_data), id(node->id) {
+        for(const auto& node_sp : node->links) {
+            link_ids.push_back(node_sp->id);
+        }
+    }
+
+    NodeContent(const std::shared_ptr<const Node<InternalDataType>> node_sp): internal_data(node_sp->internal_data), id(node_sp->id) {
+        for(const std::shared_ptr<const Node<InternalDataType>>& node_spi : node_sp->links) {
+            link_ids.push_back(node_spi->id);
+        }
+    }
+};
+
+
+
+
+
+
