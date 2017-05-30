@@ -18,6 +18,15 @@ public:
     using ConstNodeSP = std::shared_ptr<const TypedNode>;
     using ConstNodeWP = std::weak_ptr<const TypedNode>;
 
+    std::unique_ptr<TypedContent> get_node(uint64_t id) {
+        std::shared_lock<std::shared_mutex> rlock{all_nodes_mutex};
+        auto parent_node_wp_pair = all_nodes.find(id);
+        if(parent_node_wp_pair == all_nodes.end()) {
+            return nullptr;
+        }
+        return std::make_unique<TypedContent>(parent_node_wp_pair->second.lock());
+    }
+
     void add_entry_node(NodeData data) noexcept {
         auto node_sp = TypedNode::create(data);
         std::unique_lock<std::shared_mutex> wlock{all_nodes_mutex};
@@ -43,7 +52,7 @@ public:
             ConstNodeSP node_sp = pair.second.lock();
             if(node_sp != nullptr) {
                 if(pick(node_sp->internal_data)) {
-                    return std::make_unique<TypedContent>(node_sp);
+                    return std::make_unique<TypedContent>(node_sp) ;
                 }
             }
        }
@@ -116,6 +125,27 @@ public:
        }
        first_sp->links.push_back(std::move(second_sp));
        return true;
+    }
+
+    //Returns a single child of a node
+    std::unique_ptr<TypedContent> get_single_kid(uint64_t id) const {
+       std::shared_lock<std::shared_mutex> rlock{all_nodes_mutex};
+       NodeSP node_sp = all_nodes.at(id).second.lock();
+       if(node_sp->links.size() == 0) {
+            return nullptr;
+       }
+       return TypedContent{node_sp->links.front()};
+    }
+
+    //Returns a container with all kids of a node
+    template<template <typename...> class Container>
+    Container<TypedContent> get_kids(uint64_t id) const {
+       Container<TypedContent> new_nodes{};
+       std::shared_lock<std::shared_mutex> rlock{this->all_nodes_mutex};
+       NodeSP node_sp = all_nodes.at(id).second.lock();
+       for(const auto & node : node_sp->links) {
+           new_nodes.push_back(TypedContent{node});
+       }
     }
 
 private:

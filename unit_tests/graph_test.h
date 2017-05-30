@@ -24,7 +24,15 @@ void test_graph_add() {
     std::vector<data::UTFString> data_container_1{data::UTFString{"data2"},data::UTFString{"data3"}};
     graph.add_entry_nodes(data_container_1);
     std::list<data::UTFString> data_container_2{data::UTFString{"data4"},data::UTFString{"data5"}};
-    graph.add_entry_nodes(data_container_2);
+    bool added = false;
+    for(uint64_t possible_id = 0; possible_id < 100*100; possible_id++) {
+        auto a_node = graph.get_node(possible_id);
+        if(a_node != nullptr) {
+            added = graph.add_child_nodes(data_container_2, a_node->id);
+            break;
+        }
+    }
+    assert(added);
     std::cout << "Adding to graphs works just fine " << "\n";
 }
 
