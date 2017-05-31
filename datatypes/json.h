@@ -8,7 +8,7 @@ public:
 
     //mandatory methods
     std::string serialize() const noexcept {
-        return "!!PANIC!!";
+        return "!!PANIC!!  ";
     }
 
     //Lifetime management

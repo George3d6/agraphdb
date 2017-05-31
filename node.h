@@ -4,10 +4,10 @@
 #include <memory>
 #include <atomic>
 #include <climits>
-#include <experimental/type_traits>
-#include <type_traits>
-#include <boost/algorithm/string/join.hpp>
 #include <iostream>
+
+#include <boost/algorithm/string/join.hpp>
+
 
 /**
  * A Node is a structure which holds links to other node and some data
@@ -19,6 +19,7 @@ public:
     using TypedNode = Node<InternalDataType>;
     using NodeSP = std::shared_ptr<TypedNode>;
     using ConstNodeSP = std::shared_ptr<const TypedNode>;
+
     static std::string serialization_separator() { static std::string _r{"|"}; return _r; }
     static std::string serialization_link_list_separator() { static std::string _r{","}; return _r; }
 
