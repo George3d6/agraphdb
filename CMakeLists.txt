@@ -26,6 +26,7 @@ file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/unit_tests/*cpp
     ${PROJECT_SOURCE_DIR}/functional_tests/*.h
     ${PROJECT_SOURCE_DIR}/functional_tests/*cpp
+    ${PROJECT_SOURCE_DIR}/libs/rapidjson/*.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

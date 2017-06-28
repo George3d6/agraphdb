@@ -61,7 +61,7 @@ public:
         return internal_data.load();
     }
 
-    /// Not 100% thread safe yet --_--
+    /// Not 100% sure its thread safe... I think that unless I can make the if and load sequential it won't be
     void add_link(TNode* node) {
         while(true) {
             std::vector<const sp<const TNode>> old_links = (*links.load());
