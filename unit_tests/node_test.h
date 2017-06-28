@@ -28,10 +28,12 @@ void node_link_test() {
     auto related_node_two = Node<data::Float64>::create(data::Float64{11.35});
 
     //link the second to the first
-    new_node->links = std::vector<std::shared_ptr<const Node<data::Float64>>>{related_node, related_node_two};
+    new_node->add_link(related_node);
+    new_node->add_link(related_node_two);
+            //->links = std::vector<std::shared_ptr<const Node<data::Float64>>>{related_node, related_node_two};
 
     //Make sure the second node has the right amount of kids
-    assert(new_node->links.size() == 2);
+    assert(new_node->links->size() == 2);
     //add second to links
 
     new_node->links.push_back(related_node_two);

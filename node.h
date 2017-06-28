@@ -15,8 +15,8 @@ template<class InternalDataType>
 class Node {
 public:
     using TNode = Node<InternalDataType>;
-    using sp = std::shared_ptr;
-    using wp = std::weak_ptr;
+    template<class T> using sp = std::shared_ptr<T>;
+    template<class T> using wp = std::weak_ptr<T>;
 
     static std::string serialization_separator() { static std::string _r{"|"}; return _r; }
     static std::string serialization_link_list_separator() { static std::string _r{","}; return _r; }
@@ -45,9 +45,9 @@ public:
         }
 
         const std::string internal_data_serialization = internal_data.load()->serialize();
-        return  std::make_pair(std::string{std::to_string(temp_sp->id) + TypedNode::serialization_separator()
-                + boost::algorithm::join(links_id, TypedNode::serialization_link_list_separator())
-                + TypedNode::serialization_separator() + std::to_string(internal_data_serialization.size())}
+        return  std::make_pair(std::string{std::to_string(temp_sp->id) + TNode::serialization_separator()
+                + boost::algorithm::join(links_id, TNode::serialization_link_list_separator())
+                + TNode::serialization_separator() + std::to_string(internal_data_serialization.size())}
                 , internal_data_serialization);
 
     }
@@ -61,13 +61,14 @@ public:
         return internal_data.load();
     }
 
-    /// Not 100% thread safe yet --_--
+    /// Not 100% sure its thread safe... I think that unless I can make the if and load sequential it won't be
     void add_link(TNode* node) {
         while(true) {
             std::vector<const sp<const TNode>> old_links = (*links.load());
             old_links.push_back(node);
             auto new_links = std::make_shared<std::vector<const sp<const TNode>>>(old_links);
-            if((*new_links.load).size() == (*links.load()).size() + 1) {
+            auto links_size = (*new_links.load).size();
+            if(links_size == (*links.load()).size() + 1) {
                 links.load(new_links);
                 return;
             }
